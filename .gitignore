@@ -3,6 +3,7 @@
 *.key
 secrets.txt
 config.ini
+config.py
 
 # Python
 __pycache__/

@@ -40,13 +40,16 @@ def main():
         # Configure with OpenAI GPT model
         import os
         
-        # Check if API key is set
-        if not os.getenv("OPENAI_API_KEY"):
-            error_msg = "OPENAI_API_KEY environment variable not set"
+        # Setup API key from config
+        try:
+            from config import OPENAI_API_KEY
+            os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
+        except ImportError:
+            error_msg = "config.py not found"
             logger.log_error(error_msg, "initialization")
             logger.save_entry()
-            print("Error: OPENAI_API_KEY environment variable not set")
-            print("Please set it with: export OPENAI_API_KEY='your-api-key'")
+            print("Error: config.py not found")
+            print("Please copy config.example.py to config.py and add your API key")
             sys.exit(1)
         
         # Configure dspy with OpenAI

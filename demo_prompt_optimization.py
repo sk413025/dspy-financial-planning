@@ -8,10 +8,11 @@ from typing import List
 
 def setup_dspy():
     """設置 dspy"""
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        raise ValueError("請設置 OPENAI_API_KEY 環境變數")
-    os.environ['OPENAI_API_KEY'] = api_key
+    try:
+        from config import OPENAI_API_KEY
+        os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
+    except ImportError:
+        raise ValueError("請複製 config.example.py 為 config.py 並設置您的 API key")
     
     lm = dspy.LM(model='openai/gpt-4o-mini', max_tokens=400)
     dspy.configure(lm=lm)
