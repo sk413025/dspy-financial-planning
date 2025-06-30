@@ -4,19 +4,24 @@
 import dspy
 import os
 import json
+import logging
 from typing import List
+from utils.logger import get_logger
 
-def setup_dspy():
+def setup_dspy(logger):
     """設置 dspy"""
     try:
         from config import OPENAI_API_KEY
         os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
+        logger.log_info("成功載入 API key 配置")
     except ImportError:
-        raise ValueError("請複製 config.example.py 為 config.py 並設置您的 API key")
+        error_msg = "請複製 config.example.py 為 config.py 並設置您的 API key"
+        logger.log_error(error_msg, "configuration")
+        raise ValueError(error_msg)
     
     lm = dspy.LM(model='openai/gpt-4o-mini', max_tokens=400)
     dspy.configure(lm=lm)
-    print("✅ dspy 已配置完成")
+    logger.log_info("✅ dspy 已配置完成")
 
 class RetirementRisk(dspy.Signature):
     """評估退休風險並提供建議"""
@@ -30,54 +35,60 @@ class RetirementRisk(dspy.Signature):
     monthly_save_needed: str = dspy.OutputField(desc="建議每月儲蓄金額")
     strategy: str = dspy.OutputField(desc="具體退休策略建議")
 
-def show_basic_prompt_structure():
+def show_basic_prompt_structure(logger):
     """展示基礎 prompt 結構"""
+    step_info = {
+        "step": "1",
+        "title": "基礎 Prompt 結構",
+        "signature_definition": {
+            "class": "RetirementRisk",
+            "docstring": "評估退休風險並提供建議",
+            "input_fields": [
+                {"name": "age", "type": "int", "desc": "當前年齡"},
+                {"name": "savings", "type": "float", "desc": "當前存款金額(萬台幣)"},
+                {"name": "monthly_income", "type": "float", "desc": "月收入(台幣)"},
+                {"name": "target_retirement_age", "type": "int", "desc": "目標退休年齡"}
+            ],
+            "output_fields": [
+                {"name": "risk_level", "type": "str", "desc": "風險等級: 低風險/中風險/高風險"},
+                {"name": "monthly_save_needed", "type": "str", "desc": "建議每月儲蓄金額"},
+                {"name": "strategy", "type": "str", "desc": "具體退休策略建議"}
+            ]
+        },
+        "generated_prompt": """評估退休風險並提供建議
+
+---
+
+Follow the following format.
+
+Age: 當前年齡
+Savings: 當前存款金額(萬台幣)
+Monthly Income: 月收入(台幣)
+Target Retirement Age: 目標退休年齡
+Risk Level: 風險等級: 低風險/中風險/高風險
+Monthly Save Needed: 建議每月儲蓄金額
+Strategy: 具體退休策略建議
+
+---
+
+Age: [使用者輸入]
+Savings: [使用者輸入]
+Monthly Income: [使用者輸入]
+Target Retirement Age: [使用者輸入]
+Risk Level: [AI 生成]
+Monthly Save Needed: [AI 生成]
+Strategy: [AI 生成]"""
+    }
+    
+    logger.log_step(step_info)
+    
+    # 同時保留 console 輸出便於實時查看
     print("\n" + "="*80)
     print("📋 第一步: 基礎 Prompt 結構")
     print("="*80)
-    
-    print("\n🔍 我們定義的 Signature:")
-    print("```python")
-    print("class RetirementRisk(dspy.Signature):")
-    print('    """評估退休風險並提供建議"""')
-    print("    age: int = dspy.InputField(desc=\"當前年齡\")")
-    print("    savings: float = dspy.InputField(desc=\"當前存款金額(萬台幣)\")")
-    print("    monthly_income: float = dspy.InputField(desc=\"月收入(台幣)\")")
-    print("    target_retirement_age: int = dspy.InputField(desc=\"目標退休年齡\")")
-    print("    ")
-    print("    risk_level: str = dspy.OutputField(desc=\"風險等級: 低風險/中風險/高風險\")")
-    print("    monthly_save_needed: str = dspy.OutputField(desc=\"建議每月儲蓄金額\")")
-    print("    strategy: str = dspy.OutputField(desc=\"具體退休策略建議\")")
-    print("```")
-    
-    print("\n🤖 dspy 自動生成的基礎 Prompt:")
-    print("```")
-    print("評估退休風險並提供建議")
-    print("")
-    print("---")
-    print("")
-    print("Follow the following format.")
-    print("")
-    print("Age: 當前年齡")
-    print("Savings: 當前存款金額(萬台幣)")
-    print("Monthly Income: 月收入(台幣)")
-    print("Target Retirement Age: 目標退休年齡")
-    print("Risk Level: 風險等級: 低風險/中風險/高風險")
-    print("Monthly Save Needed: 建議每月儲蓄金額")
-    print("Strategy: 具體退休策略建議")
-    print("")
-    print("---")
-    print("")
-    print("Age: [使用者輸入]")
-    print("Savings: [使用者輸入]")
-    print("Monthly Income: [使用者輸入]")
-    print("Target Retirement Age: [使用者輸入]")
-    print("Risk Level: [AI 生成]")
-    print("Monthly Save Needed: [AI 生成]")
-    print("Strategy: [AI 生成]")
-    print("```")
+    print("\n✅ 步驟詳情已記錄到日誌")
 
-def test_basic_version():
+def test_basic_version(logger):
     """測試基礎版本"""
     print("\n" + "="*80)
     print("🧪 第二步: 測試基礎版本 (dspy.Predict)")
@@ -93,53 +104,39 @@ def test_basic_version():
         "target_retirement_age": 65
     }
     
-    print(f"\n📊 測試案例:")
-    print(f"年齡: {test_case['age']} 歲")
-    print(f"存款: {test_case['savings']} 萬台幣")
-    print(f"月收入: {test_case['monthly_income']:,} 台幣")
-    print(f"目標退休年齡: {test_case['target_retirement_age']} 歲")
+    logger.log_parameters(test_case, step="basic_predict")
     
-    print(f"\n🔄 實際發送給 GPT 的 Prompt:")
-    print("```")
-    print("評估退休風險並提供建議")
-    print("")
-    print("---")
-    print("")
-    print("Follow the following format.")
-    print("")
-    print("Age: 當前年齡")
-    print("Savings: 當前存款金額(萬台幣)")
-    print("Monthly Income: 月收入(台幣)")
-    print("Target Retirement Age: 目標退休年齡")
-    print("Risk Level: 風險等級: 低風險/中風險/高風險")
-    print("Monthly Save Needed: 建議每月儲蓄金額")
-    print("Strategy: 具體退休策略建議")
-    print("")
-    print("---")
-    print("")
-    print(f"Age: {test_case['age']}")
-    print(f"Savings: {test_case['savings']}")
-    print(f"Monthly Income: {test_case['monthly_income']}")
-    print(f"Target Retirement Age: {test_case['target_retirement_age']}")
-    print("Risk Level:")
-    print("```")
+    print(f"\n📊 測試案例已記錄到日誌")
     
     try:
         print("\n⏳ 執行基礎版本...")
         result = basic_predictor(**test_case)
         
+        # 記錄結果到日誌
+        result_data = {
+            "method": "basic_predict",
+            "risk_level": result.risk_level,
+            "monthly_save_needed": result.monthly_save_needed,
+            "strategy": result.strategy,
+            "has_reasoning": False
+        }
+        logger.log_prediction_result(result_data)
+        
         print(f"\n✅ 基礎版本結果:")
         print(f"🎯 風險等級: {result.risk_level}")
         print(f"💰 建議儲蓄: {result.monthly_save_needed}")
         print(f"📋 策略: {result.strategy}")
+        print("✅ 結果已記錄到日誌")
         
         return result
         
     except Exception as e:
-        print(f"❌ 基礎版本執行失敗: {e}")
+        error_msg = f"基礎版本執行失敗: {e}"
+        logger.log_error(error_msg, "basic_predict")
+        print(f"❌ {error_msg}")
         return None
 
-def test_chain_of_thought():
+def test_chain_of_thought(logger):
     """測試 ChainOfThought 版本"""
     print("\n" + "="*80)
     print("🧠 第三步: 測試 ChainOfThought 版本")
@@ -155,35 +152,23 @@ def test_chain_of_thought():
         "target_retirement_age": 65
     }
     
-    print(f"\n🔄 ChainOfThought 發送給 GPT 的 Prompt:")
-    print("```")
-    print("評估退休風險並提供建議")
-    print("")
-    print("---")
-    print("")
-    print("Follow the following format.")
-    print("")
-    print("Age: 當前年齡")
-    print("Savings: 當前存款金額(萬台幣)")
-    print("Monthly Income: 月收入(台幣)")
-    print("Target Retirement Age: 目標退休年齡")
-    print("Reasoning: Let's think step by step in order to 評估退休風險並提供建議.")
-    print("Risk Level: 風險等級: 低風險/中風險/高風險")
-    print("Monthly Save Needed: 建議每月儲蓄金額")
-    print("Strategy: 具體退休策略建議")
-    print("")
-    print("---")
-    print("")
-    print(f"Age: {test_case['age']}")
-    print(f"Savings: {test_case['savings']}")
-    print(f"Monthly Income: {test_case['monthly_income']}")
-    print(f"Target Retirement Age: {test_case['target_retirement_age']}")
-    print("Reasoning:")
-    print("```")
+    logger.log_parameters(test_case, step="chain_of_thought")
+    print(f"\n📊 測試案例已記錄到日誌")
     
     try:
         print("\n⏳ 執行 ChainOfThought 版本...")
         result = cot_predictor(**test_case)
+        
+        # 記錄結果到日誌
+        result_data = {
+            "method": "chain_of_thought",
+            "risk_level": result.risk_level,
+            "monthly_save_needed": result.monthly_save_needed,
+            "strategy": result.strategy,
+            "has_reasoning": hasattr(result, 'reasoning'),
+            "reasoning": getattr(result, 'reasoning', None)
+        }
+        logger.log_prediction_result(result_data)
         
         print(f"\n✅ ChainOfThought 版本結果:")
         print(f"🎯 風險等級: {result.risk_level}")
@@ -194,13 +179,16 @@ def test_chain_of_thought():
             print(f"\n🧠 推理過程:")
             print(f"{result.reasoning}")
         
+        print("✅ 結果已記錄到日誌")
         return result
         
     except Exception as e:
-        print(f"❌ ChainOfThought 版本執行失敗: {e}")
+        error_msg = f"ChainOfThought 版本執行失敗: {e}"
+        logger.log_error(error_msg, "chain_of_thought")
+        print(f"❌ {error_msg}")
         return None
 
-def create_training_examples():
+def create_training_examples(logger):
     """創建訓練範例"""
     print("\n" + "="*80)
     print("📚 第四步: 準備 Few-Shot 訓練範例")
@@ -245,7 +233,20 @@ def create_training_examples():
         )
     ]
     
-    print(f"\n📊 準備了 {len(examples)} 個訓練範例:")
+    # 記錄訓練範例到日誌
+    training_data = [{
+        "age": ex.age,
+        "savings": ex.savings,
+        "monthly_income": ex.monthly_income,
+        "target_retirement_age": ex.target_retirement_age,
+        "risk_level": ex.risk_level,
+        "monthly_save_needed": ex.monthly_save_needed,
+        "strategy": ex.strategy
+    } for ex in examples]
+    
+    logger.log_training_examples(training_data)
+    
+    print(f"\n📊 準備了 {len(examples)} 個訓練範例 (已記錄到日誌)")
     for i, ex in enumerate(examples, 1):
         print(f"\n{i}. 年齡{ex.age}歲, {ex.savings}萬存款, 月收入{ex.monthly_income:,}")
         print(f"   風險: {ex.risk_level}")
@@ -254,66 +255,17 @@ def create_training_examples():
     
     return examples
 
-def test_optimized_version():
+def test_optimized_version(logger):
     """測試優化版本"""
     print("\n" + "="*80)
     print("🚀 第五步: 測試 Few-Shot 優化版本")
     print("="*80)
     
     # 準備訓練範例
-    examples = create_training_examples()
+    examples = create_training_examples(logger)
     
     # 創建基礎模組
     base_module = dspy.ChainOfThought(RetirementRisk)
-    
-    print(f"\n🔄 Few-Shot 優化後的 Prompt (概念展示):")
-    print("```")
-    print("評估退休風險並提供建議")
-    print("")
-    print("---")
-    print("")
-    print("Follow the following format.")
-    print("")
-    print("Age: 當前年齡")
-    print("Savings: 當前存款金額(萬台幣)")
-    print("Monthly Income: 月收入(台幣)")
-    print("Target Retirement Age: 目標退休年齡")
-    print("Reasoning: Let's think step by step...")
-    print("Risk Level: 風險等級: 低風險/中風險/高風險")
-    print("Monthly Save Needed: 建議每月儲蓄金額")
-    print("Strategy: 具體退休策略建議")
-    print("")
-    print("---")
-    print("")
-    print("# Few-Shot 範例會自動插入在這裡")
-    print("Age: 25")
-    print("Savings: 50.0")
-    print("Monthly Income: 50000")
-    print("Target Retirement Age: 65")
-    print("Reasoning: 25歲年輕但存款不足，距離退休40年...")
-    print("Risk Level: 高風險")
-    print("Monthly Save Needed: 至少需要每月存2萬元")
-    print("Strategy: 年輕且存款不足，需要積極儲蓄和投資成長型商品")
-    print("")
-    print("Age: 45")
-    print("Savings: 800.0")
-    print("Monthly Income: 120000")
-    print("Target Retirement Age: 60")
-    print("Reasoning: 45歲有800萬存款，收入高且距離退休15年...")
-    print("Risk Level: 低風險")
-    print("Monthly Save Needed: 維持每月存3-5萬元即可")
-    print("Strategy: 存款充足，可採保守穩健的投資策略")
-    print("")
-    print("# 實際查詢")
-    print("Age: 35")
-    print("Savings: 200.0")
-    print("Monthly Income: 80000")
-    print("Target Retirement Age: 65")
-    print("Reasoning: [基於範例學習的推理]")
-    print("Risk Level: [更準確的風險評估]")
-    print("Monthly Save Needed: [更具體的儲蓄建議]")
-    print("Strategy: [更精準的策略建議]")
-    print("```")
     
     # 簡化版優化（模擬 Few-Shot 效果）
     print(f"\n⚡ 模擬 Few-Shot 學習效果...")
@@ -325,11 +277,24 @@ def test_optimized_version():
         "target_retirement_age": 65
     }
     
+    logger.log_parameters(test_case, step="few_shot_optimized")
+    
     try:
         print("\n⏳ 執行優化版本...")
         # 這裡我們用 ChainOfThought 來模擬優化效果
         # 實際的 BootstrapFewShot 會需要更複雜的設置
         optimized_result = base_module(**test_case)
+        
+        # 記錄結果到日誌
+        result_data = {
+            "method": "few_shot_optimized",
+            "risk_level": optimized_result.risk_level,
+            "monthly_save_needed": optimized_result.monthly_save_needed,
+            "strategy": optimized_result.strategy,
+            "has_reasoning": hasattr(optimized_result, 'reasoning'),
+            "reasoning": getattr(optimized_result, 'reasoning', None)
+        }
+        logger.log_prediction_result(result_data)
         
         print(f"\n✅ Few-Shot 優化版本結果:")
         print(f"🎯 風險等級: {optimized_result.risk_level}")
@@ -340,17 +305,46 @@ def test_optimized_version():
             print(f"\n🧠 推理過程:")
             print(f"{optimized_result.reasoning}")
         
+        print("✅ 結果已記錄到日誌")
         return optimized_result
         
     except Exception as e:
-        print(f"❌ 優化版本執行失敗: {e}")
+        error_msg = f"優化版本執行失敗: {e}"
+        logger.log_error(error_msg, "few_shot_optimized")
+        print(f"❌ {error_msg}")
         return None
 
-def compare_results(basic_result, cot_result, optimized_result):
+def compare_results(logger, basic_result, cot_result, optimized_result):
     """對比結果"""
     print("\n" + "="*80)
     print("📊 第六步: 結果對比分析")
     print("="*80)
+    
+    # 記錄比較結果到日誌
+    comparison_data = {
+        "basic_predict": {
+            "risk_level": basic_result.risk_level if basic_result else None,
+            "monthly_save_needed": basic_result.monthly_save_needed if basic_result else None,
+            "strategy": basic_result.strategy if basic_result else None,
+            "success": basic_result is not None
+        },
+        "chain_of_thought": {
+            "risk_level": cot_result.risk_level if cot_result else None,
+            "monthly_save_needed": cot_result.monthly_save_needed if cot_result else None,
+            "strategy": cot_result.strategy if cot_result else None,
+            "reasoning": getattr(cot_result, 'reasoning', None) if cot_result else None,
+            "success": cot_result is not None
+        },
+        "few_shot_optimized": {
+            "risk_level": optimized_result.risk_level if optimized_result else None,
+            "monthly_save_needed": optimized_result.monthly_save_needed if optimized_result else None,
+            "strategy": optimized_result.strategy if optimized_result else None,
+            "reasoning": getattr(optimized_result, 'reasoning', None) if optimized_result else None,
+            "success": optimized_result is not None
+        }
+    }
+    
+    logger.log_comparison_results(comparison_data)
     
     print(f"\n📋 完整對比表格:")
     print("┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐")
@@ -372,30 +366,17 @@ def compare_results(basic_result, cot_result, optimized_result):
     print(f"│ 儲蓄建議        │ {basic_save:<15} │ {cot_save:<15} │ {opt_save:<15} │")
     print("└─────────────────┴─────────────────┴─────────────────┴─────────────────┘")
     
-    print(f"\n🔍 詳細分析:")
+    print("✅ 比較結果已記錄到日誌")
+    print(f"\n🔍 詳細分析已記錄，此處僅顯示簡要結果:")
     
     if basic_result:
-        print(f"\n📋 基礎版本 (dspy.Predict):")
-        print(f"   風險: {basic_result.risk_level}")
-        print(f"   儲蓄: {basic_result.monthly_save_needed}")
-        print(f"   策略: {basic_result.strategy}")
-        print(f"   特點: 直接生成，簡潔但可能缺乏深度分析")
+        print(f"\n📋 基礎版本: {basic_result.risk_level} | {basic_result.monthly_save_needed[:30]}...")
     
     if cot_result:
-        print(f"\n🧠 ChainOfThought 版本:")
-        print(f"   風險: {cot_result.risk_level}")
-        print(f"   儲蓄: {cot_result.monthly_save_needed}")
-        print(f"   策略: {cot_result.strategy}")
-        print(f"   特點: 有推理過程，邏輯更清晰")
-        if hasattr(cot_result, 'reasoning'):
-            print(f"   推理: {cot_result.reasoning[:100]}...")
+        print(f"🧠 ChainOfThought: {cot_result.risk_level} | {cot_result.monthly_save_needed[:30]}...")
     
     if optimized_result:
-        print(f"\n🚀 Few-Shot 優化版本:")
-        print(f"   風險: {optimized_result.risk_level}")
-        print(f"   儲蓄: {optimized_result.monthly_save_needed}")
-        print(f"   策略: {optimized_result.strategy}")
-        print(f"   特點: 基於範例學習，應該更準確和一致")
+        print(f"🚀 Few-Shot 優化: {optimized_result.risk_level} | {optimized_result.monthly_save_needed[:30]}...")
 
 def show_prompt_evolution():
     """展示 prompt 演進過程"""
@@ -437,38 +418,73 @@ def main():
     print("4. 📊 三種方式的結果對比")
     print("=" * 80)
     
-    # 設置環境
-    setup_dspy()
+    # 初始化日誌系統
+    logger = get_logger()
+    logger.start_query("dspy prompt optimization demo", source="demo")
     
-    # 展示基礎結構
-    show_basic_prompt_structure()
-    
-    # 測試三種版本
-    basic_result = test_basic_version()
-    cot_result = test_chain_of_thought()
-    optimized_result = test_optimized_version()
-    
-    # 對比結果
-    compare_results(basic_result, cot_result, optimized_result)
-    
-    # 總結演進
-    show_prompt_evolution()
-    
-    print("\n" + "=" * 80)
-    print("🎉 dspy Prompt 優化演示完成！")
-    print("=" * 80)
-    
-    print(f"\n💡 關鍵洞察：")
-    print(f"1. dspy 讓您專注於定義任務結構，而非撰寫 prompt")
-    print(f"2. ChainOfThought 自動增加推理邏輯，提高準確性")
-    print(f"3. Few-Shot 學習可以從範例中學習最佳實踐")
-    print(f"4. 整個過程完全程式化，易於維護和擴展")
-    
-    print(f"\n🚀 實際應用建議：")
-    print(f"1. 從簡單的 Predict 開始測試基本功能")
-    print(f"2. 使用 ChainOfThought 提高複雜任務的準確性")
-    print(f"3. 收集高品質範例用於 Few-Shot 優化")
-    print(f"4. 持續監控和改進系統效果")
+    try:
+        # 設置環境
+        setup_dspy(logger)
+        
+        # 展示基礎結構
+        show_basic_prompt_structure(logger)
+        
+        # 測試三種版本
+        basic_result = test_basic_version(logger)
+        cot_result = test_chain_of_thought(logger)
+        optimized_result = test_optimized_version(logger)
+        
+        # 對比結果
+        compare_results(logger, basic_result, cot_result, optimized_result)
+        
+        # 記錄總結
+        summary_data = {
+            "demo_completed": True,
+            "basic_predict_success": basic_result is not None,
+            "chain_of_thought_success": cot_result is not None,
+            "few_shot_success": optimized_result is not None,
+            "key_insights": [
+                "dspy 讓您專注於定義任務結構，而非撰寫 prompt",
+                "ChainOfThought 自動增加推理邏輯，提高準確性",
+                "Few-Shot 學習可以從範例中學習最佳實踐",
+                "整個過程完全程式化，易於維護和擴展"
+            ],
+            "recommendations": [
+                "從簡單的 Predict 開始測試基本功能",
+                "使用 ChainOfThought 提高複雜任務的準確性",
+                "收集高品質範例用於 Few-Shot 優化",
+                "持續監控和改進系統效果"
+            ]
+        }
+        logger.log_demo_summary(summary_data)
+        
+        print("\n" + "=" * 80)
+        print("🎉 dspy Prompt 優化演示完成！")
+        print("=" * 80)
+        
+        print(f"\n💡 關鍵洞察：")
+        print(f"1. dspy 讓您專注於定義任務結構，而非撰寫 prompt")
+        print(f"2. ChainOfThought 自動增加推理邏輯，提高準確性")
+        print(f"3. Few-Shot 學習可以從範例中學習最佳實踐")
+        print(f"4. 整個過程完全程式化，易於維護和擴展")
+        
+        print(f"\n🚀 實際應用建議：")
+        print(f"1. 從簡單的 Predict 開始測試基本功能")
+        print(f"2. 使用 ChainOfThought 提高複雜任務的準確性")
+        print(f"3. 收集高品質範例用於 Few-Shot 優化")
+        print(f"4. 持續監控和改進系統效果")
+        
+        # 保存日誌
+        entry_id = logger.current_entry['id'] if logger.current_entry else "unknown"
+        logger.save_entry()
+        
+        print(f"\n📊 完整演示日誌已保存到: logs/session_{logger.session_id}.jsonl (Entry ID: {entry_id})")
+        
+    except Exception as e:
+        logger.log_error(f"演示執行失敗: {e}", "main")
+        logger.save_entry()
+        print(f"❌ 演示執行失敗: {e}")
+        raise
 
 if __name__ == "__main__":
     main()

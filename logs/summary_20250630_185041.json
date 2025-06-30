@@ -1,0 +1,16 @@
+{
+  "session_id": "20250630_185041",
+  "total_queries": 1,
+  "successful_queries": 1,
+  "failed_queries": 0,
+  "average_duration_ms": 0.0,
+  "queries": [
+    {
+      "id": 1,
+      "timestamp": "2025-06-30T18:50:41.816832",
+      "query": "dspy prompt optimization demo",
+      "bankruptcy_prob": null,
+      "success": true
+    }
+  ]
+}

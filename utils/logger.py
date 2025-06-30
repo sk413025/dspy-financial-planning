@@ -104,6 +104,64 @@ class ExperimentLogger:
                 "error": str(error)
             })
     
+    def log_info(self, message: str, phase: str = "general"):
+        """Log general information"""
+        if self.current_entry:
+            if "info" not in self.current_entry["intermediate"]:
+                self.current_entry["intermediate"]["info"] = []
+            self.current_entry["intermediate"]["info"].append({
+                "timestamp": datetime.datetime.now().isoformat(),
+                "phase": phase,
+                "message": message
+            })
+    
+    def log_step(self, step_info: Dict[str, Any]):
+        """Log a step in the demonstration process"""
+        if self.current_entry:
+            if "steps" not in self.current_entry["intermediate"]:
+                self.current_entry["intermediate"]["steps"] = []
+            step_info["timestamp"] = datetime.datetime.now().isoformat()
+            self.current_entry["intermediate"]["steps"].append(step_info)
+    
+    def log_parameters(self, params: Dict[str, Any], step: str = "general"):
+        """Log parameters for a specific step"""
+        if self.current_entry:
+            if "parameters" not in self.current_entry["intermediate"]:
+                self.current_entry["intermediate"]["parameters"] = {}
+            self.current_entry["intermediate"]["parameters"][step] = {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "params": params
+            }
+    
+    def log_prediction_result(self, result_data: Dict[str, Any]):
+        """Log the result of a prediction"""
+        if self.current_entry:
+            if "predictions" not in self.current_entry["intermediate"]:
+                self.current_entry["intermediate"]["predictions"] = []
+            result_data["timestamp"] = datetime.datetime.now().isoformat()
+            self.current_entry["intermediate"]["predictions"].append(result_data)
+    
+    def log_training_examples(self, examples: list):
+        """Log training examples used for Few-Shot learning"""
+        if self.current_entry:
+            self.current_entry["intermediate"]["training_examples"] = {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "count": len(examples),
+                "examples": examples
+            }
+    
+    def log_comparison_results(self, comparison_data: Dict[str, Any]):
+        """Log comparison results between different methods"""
+        if self.current_entry:
+            comparison_data["timestamp"] = datetime.datetime.now().isoformat()
+            self.current_entry["intermediate"]["comparison"] = comparison_data
+    
+    def log_demo_summary(self, summary_data: Dict[str, Any]):
+        """Log final summary of the demonstration"""
+        if self.current_entry:
+            summary_data["timestamp"] = datetime.datetime.now().isoformat()
+            self.current_entry["output"]["demo_summary"] = summary_data
+    
     def save_entry(self):
         """Save the current entry to file"""
         if self.current_entry:
