@@ -165,9 +165,9 @@ class ExperimentLogger:
     def save_entry(self):
         """Save the current entry to file"""
         if self.current_entry:
-            # Append to JSONL file
-            with open(self.session_file, "a") as f:
-                f.write(json.dumps(self.current_entry) + "\n")
+            # Append to JSONL file with Chinese characters preserved
+            with open(self.session_file, "a", encoding='utf-8') as f:
+                f.write(json.dumps(self.current_entry, ensure_ascii=False, indent=None) + "\n")
             
             # Add to entries list
             self.entries.append(self.current_entry)
@@ -198,8 +198,8 @@ class ExperimentLogger:
             ]
         }
         
-        with open(self.summary_file, "w") as f:
-            json.dump(summary, f, indent=2)
+        with open(self.summary_file, "w", encoding='utf-8') as f:
+            json.dump(summary, f, indent=2, ensure_ascii=False)
     
     def get_dataframe(self) -> pd.DataFrame:
         """Convert logged entries to pandas DataFrame for analysis"""
