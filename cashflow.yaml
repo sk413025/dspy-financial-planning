@@ -1,0 +1,27 @@
+base_currency: TWD
+inflation_rate_pct: 2.0
+monthly_cashflow:
+  - month: 2025-07
+    income:
+      salary: 150000
+      consulting: 20000
+    expenses:
+      housing: 35000
+      food: 20000
+      transport: 5000
+      utilities: 4000
+      insurance: 8000
+      entertainment: 10000
+      others: 5000
+  - month: 2025-08
+    income:
+      salary: 150000
+      consulting: 25000
+    expenses:
+      housing: 35000
+      food: 19000
+      transport: 5000
+      utilities: 3800
+      insurance: 8000
+      entertainment: 9000
+      others: 6000

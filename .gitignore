@@ -1,0 +1,91 @@
+# API Keys and Secrets
+.env
+*.key
+secrets.txt
+config.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/*.log
+logs/temp_*
+
+# Model caches
+.dspy_cache/
+*.model
+*.pkl
+*.joblib
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Data files (large datasets)
+*.csv
+*.xlsx
+*.parquet
+data/raw/
+data/processed/
+
+# Output files
+output/
+results/
+plots/
+*.png
+*.jpg
+*.pdf
+
+# Documentation builds
+docs/_build/
+site/

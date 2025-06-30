@@ -1,0 +1,16 @@
+{
+  "session_id": "20250630_181732",
+  "total_queries": 1,
+  "successful_queries": 1,
+  "failed_queries": 0,
+  "average_duration_ms": 5411.1849999999995,
+  "queries": [
+    {
+      "id": 1,
+      "timestamp": "2025-06-30T18:17:32.063633",
+      "query": "If I retire in 25 years with 10M TWD saved, expect 7% \u00b112% return and spend 2M per year, what is the bankruptcy probability?",
+      "bankruptcy_prob": 100.0,
+      "success": true
+    }
+  ]
+}

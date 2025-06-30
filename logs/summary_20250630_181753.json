@@ -1,0 +1,16 @@
+{
+  "session_id": "20250630_181753",
+  "total_queries": 1,
+  "successful_queries": 1,
+  "failed_queries": 0,
+  "average_duration_ms": 5716.663,
+  "queries": [
+    {
+      "id": 1,
+      "timestamp": "2025-06-30T18:17:53.135797",
+      "query": "Retirement in 20 years, 15M TWD initial, 8% return with 10% volatility, spending 1.5M annually",
+      "bankruptcy_prob": 83.44,
+      "success": true
+    }
+  ]
+}

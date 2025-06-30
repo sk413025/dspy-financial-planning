@@ -1,0 +1,16 @@
+{
+  "session_id": "20250630_181812",
+  "total_queries": 1,
+  "successful_queries": 1,
+  "failed_queries": 0,
+  "average_duration_ms": 6664.939,
+  "queries": [
+    {
+      "id": 1,
+      "timestamp": "2025-06-30T18:18:12.474789",
+      "query": "Conservative plan: 35 years to retire, 20M saved, 5% return \u00b18% volatility, 800K spending per year",
+      "bankruptcy_prob": 53.779999999999994,
+      "success": true
+    }
+  ]
+}
